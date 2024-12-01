@@ -1,4 +1,4 @@
-const baseMetaCount = 30;
+const baseMetaCount = 0;
 let metaCount = baseMetaCount;
 let metasPerSecond = 0.5;
 
