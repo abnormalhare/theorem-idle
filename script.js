@@ -2,21 +2,36 @@ const baseMetaCount = 0;
 let metaCount = baseMetaCount;
 let metasPerSecond = 0.5;
 
-// Character data: symbol, name, cost
 const characters = {
-    'phi': { symbol: '𝜑', name: 'Phi', cost: 5 },
-    'psi': { symbol: '𝜓', name: 'Psi', cost: 10 },
-    'chi': { symbol: '𝜒', name: 'Chi', cost: 15 },
-    'imply': { symbol: '→', name: 'Imply', cost: 5 },
-    'not': { symbol: '¬', name: 'Not', cost: 10 },
-    'bicon': { symbol: '↔', name: 'Bi-con', cost: 10 },
-    'and': { symbol: '^', name: 'And', cost: 15 },
+    'phi': { symbol: '𝜑', name: 'Phi', baseCost: 5, cost: 5 },
+    'psi': { symbol: '𝜓', name: 'Psi', baseCost: 10, cost: 10 },
+    'chi': { symbol: '𝜒', name: 'Chi', baseCost: 15, cost: 15 },
+    'imply': { symbol: '→', name: 'Imply', baseCost: 5, cost: 5 },
+    'not': { symbol: '¬', name: 'Not', baseCost: 10, cost: 10 },
+    'bicon': { symbol: '↔', name: 'Bi-con', baseCost: 10, cost: 10 },
+    'and': { symbol: '^', name: 'And', baseCost: 15, cost: 15 },
 };
 
+const characterCostMult = 1.2;
+
 const theorems = {
-    'Theorem idi': { name: 'Theorem idi', func: '⊢ 𝜑 ⇒ ⊢ 𝜑', mps: .5, cost: { 'phi': 2 } },
-    'Theorem a1ii': { name: 'Theorem a1ii', func: '⊢ 𝜑 & ⊢ 𝜓 ⇒ ⊢ 𝜑', mps: 1, cost: { 'phi': 2, 'psi': 1 }, purchase: 'Syntax wi' },
-    'Axiom ax-mp': { name: 'Axiom ax-mp', func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ 𝜓', mps: 3, cost: { 'phi': 2, 'psi': 2, 'imply': 1 } }
+    'Theorem idi':  {
+        func: '⊢ 𝜑 ⇒ ⊢ 𝜑',
+        mps: .5, cost: { 'phi': 2 }
+    },
+    'Theorem a1ii': {
+        func: '⊢ 𝜑 & ⊢ 𝜓 ⇒ ⊢ 𝜑',
+        mps: 1,  cost: { 'phi': 2, 'psi': 1 },
+        purchase: 'Syntax wi'
+    },
+    'Axiom ax-mp': {
+        func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ 𝜓',
+        mps: 3,  cost: { 'phi': 2, 'psi': 2, 'imply': 1 }
+    },
+    'Axiom ax-1': {
+        func: '⊢ (𝜑 → (𝜓 → 𝜑))',
+        mps: 1,  cost: { 'phi': 2, 'psi': 1, 'imply': 2 }
+    }
 };
 
 const upgrades = {
@@ -38,7 +53,7 @@ let visibleTheorems = [];
 let purchasedTheorems = [];
 
 function updateMetaCount() {
-    metaCountElem.textContent = `${metaCount.toFixed(1)} Metas`;
+    metaCountElem.textContent = `${metaCount.toFixed(2)} Metas`;
 }
 
 // Automatically give metas per second based on metasPerSecond
@@ -63,7 +78,7 @@ function load() {
     const savedMetaCount = localStorage.getItem('metaCount');
     if (savedMetaCount) {
         metaCount = parseFloat(savedMetaCount);
-        metaCountElem.textContent = `${metaCount.toFixed(1)} Metas`;
+        updateMetaCount();
     }
 
     const savedVisibleCharacters = localStorage.getItem('visibleCharacters');
@@ -74,6 +89,7 @@ function load() {
     const savedPurchasedCharacters = localStorage.getItem('purchasedCharacters');
     if (savedPurchasedCharacters) {
         purchasedCharacters = JSON.parse(savedPurchasedCharacters);
+        console.log(purchasedCharacters)
     }
 
     const savedVisibleTheorems = localStorage.getItem('visibleTheorems');
@@ -113,12 +129,17 @@ function theoremCanPurchaseCharacter(theorem) {
     });
 }
 
+function updateCharacterPrice(id) {
+    const character = characters[id];
+    character.cost = (++purchasedCharacters[id] + character.baseCost) * characterCostMult;
+}
+
 // Purchase a character
 function purchaseCharacter(id) {
     const character = characters[id];
     if (metaCount >= character.cost) {
         metaCount -= character.cost;
-        purchasedCharacters[id]++;
+        updateCharacterPrice(id);
         regenerateCharacterButtons();
         // check if a theorem can be purchased
         for (const [id, theorem] of Object.entries(theorems)) {
@@ -156,6 +177,7 @@ function purchaseTheorem(id) {
     if (canPurchase) {
         Object.entries(theorem.cost).forEach(([charID, cost]) => {
             purchasedCharacters[charID] -= cost;
+            updateCharacterPrice(charID);
         });
         metasPerSecond += theorem.mps;
         if (theorem.purchase) {
@@ -187,7 +209,7 @@ function generateCharacterButtons() {
         button.innerHTML = `
             <div class="character-symbol">${character.symbol}</div>
             <div class="character-name">${character.name}</div>
-            <div class="character-cost">Cost: ${character.cost} Metas</div>
+            <div class="character-cost">Cost: ${character.cost.toFixed(2)} Metas</div>
             <div class="character-count">Owned: ${purchasedCharacters[id]}</div>
         `;
 
@@ -264,7 +286,7 @@ function regenerateTheorems() {
 
 function resetGame() {
     metaCount = baseMetaCount;
-    metaCountElem.textContent = `${metaCount.toFixed(1)} Metas`;
+    updateMetaCount();
     metasPerSecond = 0.5;
     visibleCharacters = ['phi', 'psi'];
     purchasedCharacters = {};

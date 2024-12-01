@@ -88,11 +88,11 @@ body.dark .left, body.dark .middle, body.dark .right {
 }
 
 body.dark button {
-    background-color: #50fa7b;
+    background-color: #06b844;
 }
 
 body.dark button:hover {
-    background-color: #8be9fd;
+    background-color: #33a1b9;
 }
 
 body.dark .character-cost,
