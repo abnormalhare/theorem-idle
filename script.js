@@ -99,11 +99,16 @@ function updateMetaCount() {
 }
 
 // Automatically give metas per second based on metasPerSecond
-setInterval(() => {
+
+function updateMeta() {
     metaCount += metasPerSecond;
     updateMetaCount();
     localStorage.setItem('metaCount', metaCount);
     regenerateCharacterButtons();
+}
+
+setInterval(() => {
+    updateMeta();
 }, 1000);
 
 function save() {
