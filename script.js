@@ -1,68 +1,136 @@
-let metaCount = 0;
+const baseMetaCount = 30;
+let metaCount = baseMetaCount;
 let metasPerSecond = 0.5;
-let characterCounts = {
-    phi: 0,
-    psi: 0,
-    not: 0,
-    alpha: 0,
-    beta: 0,
-    gamma: 0
-};
 
 // Character data: symbol, name, cost
 const characters = [
     { id: 'phi', symbol: '𝜑', name: 'Phi', cost: 5 },
     { id: 'psi', symbol: '𝜓', name: 'Psi', cost: 10 },
     { id: 'chi', symbol: '𝜒', name: 'Chi', cost: 15 },
-    { id: 'not', symbol: '¬', name: 'Not', cost: 5 },
-    { id: 'imply', symbol: '→', name: 'Imply', cost: 10 },
+    { id: 'imply', symbol: '→', name: 'Imply', cost: 5 },
+    { id: 'not', symbol: '¬', name: 'Not', cost: 10},
     { id: 'bicon', symbol: '↔', name: 'Bi-con', cost: 10 },
-    { id: 'and', symbol: '¬', name: 'Not', cost: 10 },
+    { id: 'and', symbol: '^', name: 'And', cost: 15 },
 ];
 
 const theorems = [
     { name: 'Theorem idi', func: '⊢ 𝜑 ⇒ ⊢ 𝜑', mps: .5, cost: { 'phi': 2 } },
-    { name: 'Theorem a1ii', func: '⊢ 𝜑 & ⊢ 𝜓 ⇒ ⊢ 𝜑', mps: 1, cost: { 'phi': 2, 'psi': 1 }, purchase: 'Syntax wn' },
+    { name: 'Theorem a1ii', func: '⊢ 𝜑 & ⊢ 𝜓 ⇒ ⊢ 𝜑', mps: 1, cost: { 'phi': 2, 'psi': 1 }, purchase: 'Syntax wi' },
+    { name: 'Axiom ax-mp', func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ 𝜓', mps: 3, cost: { 'phi': 2, 'psi': 2, 'imply': 1 } }
 ]
 
 const upgrades = [
-    { name: "Syntax wn", symbol: '¬', cost: 10, unlock: 'not' }
+    { name: "Syntax wi", symbol: '→', cost: 10, unlock: 'imply' },
+    { name: "Syntax wn", symbol: '¬', cost: 20, unlock: 'not' },
 ];
 
 // DOM elements
 const metaCountElem = document.getElementById('metaCount');
-const darkModeButton = document.getElementById('darkModeButton');
 const characterGrid = document.querySelector('.character-grid'); // Container for character buttons
 const upgradeContainer = document.querySelector('.upgrades'); // Container for upgrades
 const theoremsContainer = document.querySelector('.theorems'); // Container for theorems
 
-const visibleCharacters = characters.filter(character => character.id === 'phi' || character.id === 'psi');
+let visibleCharacters = characters.filter(character => character.id === 'phi' || character.id === 'psi');
+let purchasedCharacters = {};
 let visibleUpgrades = [];
-const purchasedUpgrades = [];
+let purchasedUpgrades = [];
 let visibleTheorems = [];
-const purchasedTheorems = [];
+let purchasedTheorems = [];
+
+function updateMetaCount() {
+    metaCountElem.textContent = `${metaCount.toFixed(1)} Metas`;
+}
 
 // Automatically give metas per second based on metasPerSecond
 setInterval(() => {
     metaCount += metasPerSecond;
-    updateDisplay();
+    updateMetaCount();
+    localStorage.setItem('metaCount', metaCount);
+    regenerateCharacterButtons();
 }, 1000);
 
+function save() {
+    localStorage.setItem('metaCount', metaCount);
+    localStorage.setItem('visibleCharacters', JSON.stringify(visibleCharacters));
+    localStorage.setItem('purchasedCharacters', JSON.stringify(purchasedCharacters));
+    localStorage.setItem('visibleTheorems', JSON.stringify(visibleTheorems));
+    localStorage.setItem('purchasedTheorems', JSON.stringify(purchasedTheorems));
+    localStorage.setItem('visibleUpgrades', JSON.stringify(visibleUpgrades));
+    localStorage.setItem('purchasedUpgrades', JSON.stringify(purchasedUpgrades));
+}
+
+function load() {
+    const savedMetaCount = localStorage.getItem('metaCount');
+    if (savedMetaCount) {
+        metaCount = parseFloat(savedMetaCount);
+        metaCountElem.textContent = `${metaCount.toFixed(1)} Metas`;
+    }
+
+    const savedVisibleCharacters = localStorage.getItem('visibleCharacters');
+    if (savedVisibleCharacters) {
+        visibleCharacters = JSON.parse(savedVisibleCharacters);
+    }
+
+    const savedPurchasedCharacters = localStorage.getItem('purchasedCharacters');
+    if (savedPurchasedCharacters) {
+        purchasedCharacters = JSON.parse(savedPurchasedCharacters);
+    }
+
+    const savedVisibleTheorems = localStorage.getItem('visibleTheorems');
+    if (savedVisibleTheorems) {
+        visibleTheorems = JSON.parse(savedVisibleTheorems);
+    }
+
+    const savedPurchasedTheorems = localStorage.getItem('purchasedTheorems');
+    if (savedPurchasedTheorems) {
+        purchasedTheorems = JSON.parse(savedPurchasedTheorems);
+    }
+
+    const savedVisibleUpgrades = localStorage.getItem('visibleUpgrades');
+    if (savedVisibleUpgrades) {
+        visibleUpgrades = JSON.parse(savedVisibleUpgrades);
+    }
+
+    const savedPurchasedUpgrades = localStorage.getItem('purchasedUpgrades');
+    if (savedPurchasedUpgrades) {
+        purchasedUpgrades = JSON.parse(savedPurchasedUpgrades);
+    }
+}
+
+function theoremCanSeeCharacter(theorem) {
+    // check if the count of all characters in the theorem is greater than the cost of the theorem - 1
+    return Object.entries(theorem.cost).every(([id, cost]) => {
+        c = purchasedCharacters[characters.find(character => character.id === id).id];
+        return c >= cost - 1 && c != 0;
+    });
+}
+
+function theoremCanPurchaseCharacter(theorem) {
+    return Object.entries(theorem.cost).every(([id, cost]) => {
+        c = purchasedCharacters[characters.find(character => character.id === id).id];
+        return c >= cost;
+    });
+}
+
 // Purchase a character
-function purchaseCharacter(characterId, characterCost) {
-    if (metaCount >= characterCost) {
-        metaCount -= characterCost;
-        characterCounts[characterId]++;
-        updateDisplay();
+function purchaseCharacter(character) {
+    if (metaCount >= character.cost) {
+        metaCount -= character.cost;
+        purchasedCharacters[character.id]++;
+        regenerateCharacterButtons();
         // check if a theorem can be purchased
-        const theoremsToUnlock = theorems.filter(theorem => Object.keys(theorem.cost).includes(characterId));
+        const theoremsToUnlock = theorems.filter(theorem => Object.keys(theorem.cost).includes(character.id));
         theoremsToUnlock.forEach(theorem => {
-            const canPurchase = Object.entries(theorem.cost).every(([id, cost]) => characterCounts[id] >= cost - 1);
+            const canPurchase = theoremCanSeeCharacter(theorem);
+
             if (canPurchase && !visibleTheorems.includes(theorem) && !purchasedTheorems.includes(theorem)) {
                 visibleTheorems.push(theorem);
                 regenerateTheorems();
             }
         });
+
+        save();
+        updateMetaCount();
     }
 }
 
@@ -77,17 +145,22 @@ function purchaseUpgrade(upgrade) {
         visibleUpgrades = visibleUpgrades.filter(u => u !== upgrade);
         purchasedUpgrades.push(upgrade);
         
-        updateDisplay();
         regenerateCharacterButtons();
         regenerateUpgrades();
+
+        save();
+        updateMetaCount();
     }
 }
 
 function purchaseTheorem(theorem) {
 
-    const canPurchase = Object.entries(theorem.cost).every(([id, cost]) => characterCounts[id] >= cost);
+    const canPurchase = theoremCanPurchaseCharacter(theorem);
     if (canPurchase) {
-        Object.entries(theorem.cost).forEach(([id, cost]) => characterCounts[id] -= cost);
+        Object.entries(theorem.cost).forEach(([id, cost]) => {
+            c = characters.find(character => character.id === id);
+            purchasedCharacters[c.id] -= cost
+        });
         metasPerSecond += theorem.mps;
         if (theorem.purchase) {
             const unlock = upgrades.find(purchase => purchase.name === theorem.purchase);
@@ -96,30 +169,14 @@ function purchaseTheorem(theorem) {
         visibleTheorems = visibleTheorems.filter(t => t !== theorem);
         purchasedTheorems.push(theorem);
         
-        updateDisplay();
+        regenerateCharacterButtons();
         regenerateTheorems();
         regenerateUpgrades();
+
+        save();
+        updateMetaCount();
     }
 }
-
-// Dark mode toggle
-darkModeButton.addEventListener('click', () => {
-    const isDarkMode = document.body.classList.toggle('dark');
-    localStorage.setItem('darkMode', isDarkMode);
-    updateDarkModeButton(isDarkMode);
-});
-
-// Update the button text based on the mode
-function updateDarkModeButton(isDarkMode) {
-    darkModeButton.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
-}
-
-// Load dark mode preference on page load
-window.addEventListener('DOMContentLoaded', () => {
-    const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
-    document.body.classList.toggle('dark', darkModeEnabled);
-    updateDarkModeButton(darkModeEnabled);
-});
 
 // Generate character buttons dynamically (only Phi and Psi visible initially)
 function generateCharacterButtons() {
@@ -128,17 +185,19 @@ function generateCharacterButtons() {
         button.classList.add('character-button');
         button.id = character.id;
 
+        purchasedCharacters[character.id] = purchasedCharacters[character.id] || 0;
+
         // Add character content
         button.innerHTML = `
             <div class="character-symbol">${character.symbol}</div>
             <div class="character-name">${character.name}</div>
             <div class="character-cost">Cost: ${character.cost} Metas</div>
-            <div class="character-count">Owned: 0</div>
+            <div class="character-count">Owned: ${purchasedCharacters[character.id]}</div>
         `;
 
         // Event listener for purchasing character
         button.addEventListener('click', () => {
-            purchaseCharacter(character.id, character.cost);
+            purchaseCharacter(character);
         });
 
         // Append to the character grid
@@ -207,22 +266,50 @@ function regenerateTheorems() {
     generateTheorems();
 }
 
-// Update displayed values
-function updateDisplay() {
-    metaCountElem.textContent = `${metaCount.toFixed(1)} Metas`; // Format the count to one decimal place
-
-    // Update character button content
-    document.querySelectorAll('.character-button').forEach(button => {
-        const characterId = button.id;
-        const characterCount = characterCounts[characterId];
-        button.querySelector('.character-count').textContent = `Owned: ${characterCount}`;
-    });
+function resetGame() {
+    metaCount = baseMetaCount;
+    metaCountElem.textContent = `${metaCount.toFixed(1)} Metas`;
+    metasPerSecond = 0.5;
+    visibleCharacters = characters.filter(character => character.id === 'phi' || character.id === 'psi');
+    purchasedCharacters = {};
+    visibleUpgrades = [];
+    purchasedUpgrades = [];
+    visibleTheorems = [];
+    purchasedTheorems = [];
+    save();
+    location.reload();
 }
+
+const darkModeButton = document.getElementById('darkModeButton');
+const resetButton = document.getElementById('resetButton');
+
+darkModeButton.addEventListener('click', () => {
+    const isDarkMode = document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDarkMode);
+    updateDarkModeButton(isDarkMode);
+});
+
+// Update the button text based on the mode
+function updateDarkModeButton(isDarkMode) {
+    darkModeButton.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+// Load dark mode preference on page load
+window.addEventListener('DOMContentLoaded', () => {
+    const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+    document.body.classList.toggle('dark', darkModeEnabled);
+    updateDarkModeButton(darkModeEnabled);
+});
+
+resetButton.addEventListener('click', () => {
+    localStorage.setItem('metaCount', 0);
+    resetGame();
+});
 
 // Initial setup
 window.addEventListener('DOMContentLoaded', () => {
-    generateCharacterButtons(); // Only Phi and Psi will be generated
+    load();
+    generateCharacterButtons();
     generateUpgrades();
     generateTheorems();
-    updateDisplay();
 });
