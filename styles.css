@@ -6,7 +6,6 @@ body {
     margin: 0;
     padding: 0;
     transition: background-color 0.3s;
-    transition: color 0.3s;
 }
 
 .container {
@@ -195,6 +194,7 @@ button:hover {
     font-size: 0.9rem;
     margin-top: 10px;
     color: #f1fa8c;
+    transition: color 0.3s;
 }
 
 .theorems,
