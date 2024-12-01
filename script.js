@@ -110,7 +110,6 @@ function updateMeta() {
     metaCount += metasPerSecond;
     updateMetaCount();
     localStorage.setItem('metaCount', metaCount);
-    regenerateCharacterButtons();
 }
 
 setInterval(() => {
@@ -315,6 +314,8 @@ function generateCharacterButtons() {
 
         // Append to the character grid
         characterGrid.appendChild(button);
+
+        // button.style.transition = "background-color 0.3s, transform 0.1s ease-out";
     });
 }
 
