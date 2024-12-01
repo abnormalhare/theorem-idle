@@ -1,0 +1,247 @@
+/* General styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    color: #282a36;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 50px auto;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: background-color 0.3s;
+}
+
+/* Header styling */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* Allows positioning of the button */
+    margin-bottom: 20px;
+}
+
+/* Title centered */
+.header h1 {
+    margin: 0;
+    font-size: 2rem;
+    text-align: center;
+    flex-grow: 1; /* Allows the title to take up remaining space */
+}
+
+/* Dark mode button in the header */
+.dark-mode-btn {
+    position: absolute; /* Absolute positioning within the header */
+    right: 20px; /* Aligns to the far right of the header */
+    top: 50%; /* Vertically centers it relative to the header */
+    transform: translateY(-50%);
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #6272a4;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.dark-mode-btn:hover {
+    background-color: #44475a;
+}
+
+/* Dark mode styles */
+body.dark {
+    background-color: #282a36;
+    color: #f8f8f2;
+}
+
+body.dark .container {
+    background-color: #44475a;
+}
+
+body.dark .left, body.dark .middle, body.dark .right {
+    background-color: #6272a4;
+}
+
+body.dark button {
+    background-color: #50fa7b;
+}
+
+body.dark button:hover {
+    background-color: #8be9fd;
+}
+
+body.dark .character-cost,
+body.dark .character-count {
+    font-size: 0.9rem;
+    margin-top: 10px;
+    color: #646c08;
+}
+
+
+/* Main content layout */
+.main-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Section styling */
+.left, .middle, .right {
+    flex: 1;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+}
+
+/* Specific section styles */
+.left .counter {
+    text-align: center;
+}
+
+.right .upgrades {
+    text-align: center;
+}
+
+.middle .right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Upgrade button styling */
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #6272a4;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s ease-out;
+}
+
+button:hover {
+    background-color: #44475a;
+}
+
+/* Character grid styling */
+.character-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);  /* 3 columns */
+    grid-gap: 20px;
+    padding: 20px;
+}
+
+/* Character button styling */
+.character-button {
+    padding: 15px;
+    background-color: #6272a4;
+    color: #fff;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s ease-out;
+    border: none;
+}
+
+.character-button:hover {
+    background-color: #44475a;
+}
+
+/* Press effect on click */
+.character-button:active {
+    transform: scale(0.95);  /* Shrink the button on click */
+}
+
+/* Character symbol */
+.character-symbol {
+    font-size: 3rem;
+}
+
+.character-name {
+    font-size: 1.2rem;
+}
+
+.character-cost,
+.character-count {
+    font-size: 0.9rem;
+    margin-top: 10px;
+    color: #f1fa8c;
+}
+
+.upgrades {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+}
+
+/* Upgrade button styling */
+.upgrade-button {
+    padding: 15px;
+    background-color: #6272a4;
+    color: #fff;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s ease-out;
+    border: none;
+}
+
+.upgrade-button:hover {
+    background-color: #44475a;
+}
+
+/* Press effect on click */
+.upgrade-button:active {
+    transform: scale(0.95);  /* Shrink the button on click */
+}
+
+/* Upgrade button text styling */
+.upgrade-button h3 {
+    font-size: 1.2rem;
+}
+
+.upgrade-button p {
+    font-size: 1rem;
+    margin: 5px 0;
+    color: #f1fa8c;
+}
+
+h2 { /* Lol */
+    text-align: center;
+}
+
+.theorems {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+}
+
+.theorem-button {
+    padding: 15px;
+    background-color: #6272a4;
+    color: #fff;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s ease-out;
+    border: none;
+}
+
+.theorem-button:active {
+    transform: scale(0.95);  /* Shrink the button on click */
+}
