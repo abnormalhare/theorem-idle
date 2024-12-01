@@ -1,5 +1,6 @@
 const baseMetaCount = 0;
 let metaCount = baseMetaCount;
+let metaCountDisp = metaCount;
 let metasPerSecond = 0.5;
 
 const characters = {
@@ -76,7 +77,24 @@ let visibleTheorems = [];
 let purchasedTheorems = {};
 
 function updateMetaCount() {
-    metaCountElem.textContent = `${metaCount.toFixed(2)} Metas`;
+    const startTime = performance.now();
+
+    const startPoint = metaCountDisp;
+    const endPoint = metaCount;
+    const distance = endPoint - startPoint;
+
+    function animate(time) {
+        const elapsed = time - startTime;
+        const progress = elapsed / 1000;
+
+        metaCountDisp = startPoint + distance * progress;
+
+        metaCountElem.textContent = `${metaCountDisp.toFixed(2)} Metas`;
+
+        if (progress < 1) requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
     mpsCountElem.textContent = `${metasPerSecond.toFixed(1)} m/s`;
 }
 
@@ -351,8 +369,8 @@ function regenerateTheorems() {
 
 function resetGame() {
     metaCount = baseMetaCount;
-    updateMetaCount();
     metasPerSecond = 0.5;
+    updateMetaCount();
     visibleCharacters = ['phi', 'psi'];
     purchasedCharacters = {};
     characterCost = {};

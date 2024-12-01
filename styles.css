@@ -236,9 +236,10 @@ button:hover {
     transform: scale(0.95);  /* Shrink the button on click */
 }
 
-/* Upgrade button text styling */
+/* make it separate from the rest of the content */
 .upgrade-button h3 {
-    font-size: 1.2rem;
+    margin: 0;
+    font-size: 1.5rem;
 }
 
 .upgrade-button p {
