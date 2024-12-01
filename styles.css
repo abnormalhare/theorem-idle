@@ -87,7 +87,7 @@ body.dark .left, body.dark .middle, body.dark .right {
 }
 
 body.dark button {
-    background-color: #06b844;
+    background-color: #1e3f6a;
 }
 
 body.dark button:hover {
@@ -98,7 +98,7 @@ body.dark .character-cost,
 body.dark .character-count {
     font-size: 0.9rem;
     margin-top: 10px;
-    color: #646c08;
+    color: #c8d80e;
 }
 
 
@@ -144,6 +144,7 @@ button {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.1s ease-out;
+    box-shadow: 2px 2px 4px #282a36;
 }
 
 button:hover {
@@ -215,9 +216,15 @@ button:hover {
     border: none;
 }
 
+.theorem-button-top,
+.theorem-button-bottom {
+    display: flex;
+    justify-content: space-between;
+}
+
 .theorem-button p {
     margin: 5px 0;
-    text-align: right;
+    text-align: center;
 }
 
 .theorem-button h3 {

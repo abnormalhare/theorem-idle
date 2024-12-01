@@ -13,7 +13,7 @@ const characters = {
     'and': { symbol: '^', name: 'And', baseCost: 15 },
 };
 
-const characterCostMult = 1.2;
+const characterCostAdd = 1.5;
 
 const theorems = {
     'Theorem idi':  {
@@ -32,26 +32,32 @@ const theorems = {
     },
     'Axiom ax-1': {
         func: '⊢ (𝜑 → (𝜓 → 𝜑))',
-        mps: 1,   costW: { 'phi': 2, 'psi': 1, 'imply': 2 },
+        mps: 2,   costW: { 'phi': 2, 'psi': 1, 'imply': 2 },
         purchase: 'Syntax wn'
     },
     'Axiom ax-2': {
         func: '⊢ ((𝜑 → (𝜓 → 𝜒)) → ((𝜑 → 𝜓) → (𝜑 → 𝜒)))',
-        mps: 3,   costW: { 'phi': 3, 'psi': 2, 'chi': 2, 'imply': 5 }
+        mps: 4,   costW: { 'phi': 3, 'psi': 2, 'chi': 2, 'imply': 5 }
     },
     'Axiom ax-3': {
         func: '⊢ ((¬𝜑 → ¬𝜓) → (𝜓 → 𝜑))',
-        mps: 1.5, costW: { 'phi': 2, 'psi': 2, 'not': 2, 'imply': 3 }
+        mps: 2.5, costW: { 'phi': 2, 'psi': 2, 'not': 2, 'imply': 3 }
     },
     'Theorem mp2': {
         func: '⊢ 𝜑 & ⊢ 𝜓 & ⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ 𝜒',
         mps: 1, costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'imply': 2 },
                 costT: { 'Axiom ax-mp': 2 }
     },
+    'Theorem mp2b': {
+        func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) ⇒ ⊢ 𝜒',
+        mps: 1, costW: { '': 1 },
+                costT: { '': 1 }
+    },
 
     // '': {
     //     func: '',
-    //     mps: 1, cost: { '': 1 },
+    //     mps: 1, costW: { '': 1 },
+    //             costT: { '': 1 }
     // },
 };
 
@@ -216,7 +222,7 @@ function removeCost(theorem) {
 }
 
 function updateCharacterPrice(id) {
-    characterCost[id] *= characterCostMult;
+    characterCost[id] += characterCostAdd * (characters[id].baseCost * 0.15);
 }
 
 // Purchase a character
@@ -260,7 +266,13 @@ function purchaseUpgrade(id) {
 function purchaseTheorem(id) {
     const theorem = theorems[id];
     const canPurchase = theoremCanPurchaseCharacter(theorem);
-    if (canPurchase) {
+    if (purchasedTheorems[id] > 10) {
+        purchasedTheorems[id] = 10;
+        regenerateTheorems();
+        save();
+        updateMetaCount();
+    }
+    if (canPurchase && purchasedTheorems[id] < 10) {
         removeCost(theorem);
         metasPerSecond += theorem.mps;
         if (theorem.purchase && !visibleUpgrades.includes(theorem.purchase) && !purchasedUpgrades.includes(theorem.purchase)) {
@@ -351,10 +363,14 @@ function generateTheorems() {
 
         // Add character content
         button.innerHTML = `
-            <h3>${id}</h3>
-            <p>${theorem.func}</p>
-            <p><strong>${genCostStr(theorem)}</strong></p>
-            <p>Owned: ${purchasedTheorems[id]}</p>
+            <div class="theorem-button-top">
+                <h3>${id}</h3>
+                <p>${theorem.func}</p>
+            </div>
+            <div class="theorem-button-bottom">
+                <p>Owned: ${purchasedTheorems[id]}/10</p>
+                <p><strong>${genCostStr(theorem)}</strong></p>
+            </div>
         `;
 
         // Event listener for purchasing character
