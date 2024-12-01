@@ -3,40 +3,51 @@ let metaCount = baseMetaCount;
 let metasPerSecond = 0.5;
 
 const characters = {
-    'phi': { symbol: '𝜑', name: 'Phi', baseCost: 5, cost: 5 },
-    'psi': { symbol: '𝜓', name: 'Psi', baseCost: 10, cost: 10 },
-    'chi': { symbol: '𝜒', name: 'Chi', baseCost: 15, cost: 15 },
-    'imply': { symbol: '→', name: 'Imply', baseCost: 5, cost: 5 },
-    'not': { symbol: '¬', name: 'Not', baseCost: 10, cost: 10 },
-    'bicon': { symbol: '↔', name: 'Bi-con', baseCost: 10, cost: 10 },
-    'and': { symbol: '^', name: 'And', baseCost: 15, cost: 15 },
+    'phi': { symbol: '𝜑', name: 'Phi', baseCost: 5 },
+    'psi': { symbol: '𝜓', name: 'Psi', baseCost: 8 },
+    'chi': { symbol: '𝜒', name: 'Chi', baseCost: 15 },
+    'imply': { symbol: '→', name: 'Imply', baseCost: 6 },
+    'not': { symbol: '¬', name: 'Not', baseCost: 12 },
+    'bicon': { symbol: '↔', name: 'Bi-con', baseCost: 10 },
+    'and': { symbol: '^', name: 'And', baseCost: 15 },
 };
 
-const characterCostMult = 1.2;
+const characterCostExp = 1.1;
 
 const theorems = {
     'Theorem idi':  {
         func: '⊢ 𝜑 ⇒ ⊢ 𝜑',
-        mps: .5, cost: { 'phi': 2 }
+        mps: .5,  cost: { 'phi': 2 }
     },
     'Theorem a1ii': {
         func: '⊢ 𝜑 & ⊢ 𝜓 ⇒ ⊢ 𝜑',
-        mps: 1,  cost: { 'phi': 2, 'psi': 1 },
+        mps: 1,   cost: { 'phi': 2, 'psi': 1 },
         purchase: 'Syntax wi'
     },
     'Axiom ax-mp': {
         func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ 𝜓',
-        mps: 3,  cost: { 'phi': 2, 'psi': 2, 'imply': 1 }
+        mps: 2,   cost: { 'phi': 2, 'psi': 2, 'imply': 1 },
+        purchase: 'Syntax chi'
     },
     'Axiom ax-1': {
         func: '⊢ (𝜑 → (𝜓 → 𝜑))',
-        mps: 1,  cost: { 'phi': 2, 'psi': 1, 'imply': 2 }
+        mps: 1,   cost: { 'phi': 2, 'psi': 1, 'imply': 2 },
+        purchase: 'Syntax wn'
+    },
+    'Axiom ax-2': {
+        func: '⊢ ((𝜑 → (𝜓 → 𝜒)) → ((𝜑 → 𝜓) → (𝜑 → 𝜒)))',
+        mps: 3,   cost: { 'phi': 3, 'psi': 2, 'chi': 2, 'imply': 5 }
+    },
+    'Axiom ax-3': {
+        func: '⊢ ((¬𝜑 → ¬𝜓) → (𝜓 → 𝜑))',
+        mps: 1.5, cost: { 'phi': 2, 'psi': 2, 'not': 2, 'imply': 3 }
     }
 };
 
 const upgrades = {
     'Syntax wi': { symbol: '→', cost: 10, unlock: 'imply' },
-    'Syntax wn': { symbol: '¬', cost: 20, unlock: 'not' }
+    'Syntax wn': { symbol: '¬', cost: 20, unlock: 'not' },
+    'Syntax chi': { symbol: '𝜒', cost: 35, unlock: 'chi' }
 };
 
 // DOM elements
@@ -47,6 +58,7 @@ const theoremsContainer = document.querySelector('.theorems');
 
 let visibleCharacters = ['phi', 'psi'];
 let purchasedCharacters = {};
+let characterCost = {};
 let visibleUpgrades = [];
 let purchasedUpgrades = [];
 let visibleTheorems = [];
@@ -68,6 +80,7 @@ function save() {
     localStorage.setItem('metaCount', metaCount);
     localStorage.setItem('visibleCharacters', JSON.stringify(visibleCharacters));
     localStorage.setItem('purchasedCharacters', JSON.stringify(purchasedCharacters));
+    localStorage.setItem('characterCost', JSON.stringify(characterCost));
     localStorage.setItem('visibleTheorems', JSON.stringify(visibleTheorems));
     localStorage.setItem('purchasedTheorems', JSON.stringify(purchasedTheorems));
     localStorage.setItem('visibleUpgrades', JSON.stringify(visibleUpgrades));
@@ -90,6 +103,11 @@ function load() {
     if (savedPurchasedCharacters) {
         purchasedCharacters = JSON.parse(savedPurchasedCharacters);
         console.log(purchasedCharacters)
+    }
+
+    const savedCharacterCost = localStorage.getItem('characterCost');
+    if (savedCharacterCost) {
+        characterCost = JSON.parse(savedCharacterCost);
     }
 
     const savedVisibleTheorems = localStorage.getItem('visibleTheorems');
@@ -131,15 +149,15 @@ function theoremCanPurchaseCharacter(theorem) {
 
 function updateCharacterPrice(id) {
     const character = characters[id];
-    character.cost = (++purchasedCharacters[id] + character.baseCost) * characterCostMult;
+    characterCost[id] = (purchasedCharacters[id] + character.baseCost) ** characterCostExp;
 }
 
 // Purchase a character
 function purchaseCharacter(id) {
     const character = characters[id];
-    if (metaCount >= character.cost) {
-        metaCount -= character.cost;
-        updateCharacterPrice(id);
+    if (metaCount >= characterCost[id]) {
+        metaCount -= characterCost[id];
+        purchasedCharacters[id]++;
         regenerateCharacterButtons();
         // check if a theorem can be purchased
         for (const [id, theorem] of Object.entries(theorems)) {
@@ -177,7 +195,6 @@ function purchaseTheorem(id) {
     if (canPurchase) {
         Object.entries(theorem.cost).forEach(([charID, cost]) => {
             purchasedCharacters[charID] -= cost;
-            updateCharacterPrice(charID);
         });
         metasPerSecond += theorem.mps;
         if (theorem.purchase) {
@@ -204,12 +221,14 @@ function generateCharacterButtons() {
 
         const character = characters[id];
         purchasedCharacters[id] = purchasedCharacters[id] || 0;
+        characterCost[id] = characterCost[id] || character.baseCost;
+        updateCharacterPrice(id);
 
         // Add character content
         button.innerHTML = `
             <div class="character-symbol">${character.symbol}</div>
             <div class="character-name">${character.name}</div>
-            <div class="character-cost">Cost: ${character.cost.toFixed(2)} Metas</div>
+            <div class="character-cost">Cost: ${characterCost[id].toFixed(2)} Metas</div>
             <div class="character-count">Owned: ${purchasedCharacters[id]}</div>
         `;
 
@@ -290,6 +309,7 @@ function resetGame() {
     metasPerSecond = 0.5;
     visibleCharacters = ['phi', 'psi'];
     purchasedCharacters = {};
+    characterCost = {};
     visibleUpgrades = [];
     purchasedUpgrades = [];
     visibleTheorems = [];
