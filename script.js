@@ -12,36 +12,46 @@ const characters = {
     'and': { symbol: '^', name: 'And', baseCost: 15 },
 };
 
-const characterCostExp = 1.1;
+const characterCostMult = 1.2;
 
 const theorems = {
     'Theorem idi':  {
         func: '⊢ 𝜑 ⇒ ⊢ 𝜑',
-        mps: .5,  cost: { 'phi': 2 }
+        mps: .5,  costW: { 'phi': 2 }
     },
     'Theorem a1ii': {
         func: '⊢ 𝜑 & ⊢ 𝜓 ⇒ ⊢ 𝜑',
-        mps: 1,   cost: { 'phi': 2, 'psi': 1 },
+        mps: 1,   costW: { 'phi': 2, 'psi': 1 },
         purchase: 'Syntax wi'
     },
     'Axiom ax-mp': {
         func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ 𝜓',
-        mps: 2,   cost: { 'phi': 2, 'psi': 2, 'imply': 1 },
+        mps: 2,   costW: { 'phi': 2, 'psi': 2, 'imply': 1 },
         purchase: 'Syntax chi'
     },
     'Axiom ax-1': {
         func: '⊢ (𝜑 → (𝜓 → 𝜑))',
-        mps: 1,   cost: { 'phi': 2, 'psi': 1, 'imply': 2 },
+        mps: 1,   costW: { 'phi': 2, 'psi': 1, 'imply': 2 },
         purchase: 'Syntax wn'
     },
     'Axiom ax-2': {
         func: '⊢ ((𝜑 → (𝜓 → 𝜒)) → ((𝜑 → 𝜓) → (𝜑 → 𝜒)))',
-        mps: 3,   cost: { 'phi': 3, 'psi': 2, 'chi': 2, 'imply': 5 }
+        mps: 3,   costW: { 'phi': 3, 'psi': 2, 'chi': 2, 'imply': 5 }
     },
     'Axiom ax-3': {
         func: '⊢ ((¬𝜑 → ¬𝜓) → (𝜓 → 𝜑))',
-        mps: 1.5, cost: { 'phi': 2, 'psi': 2, 'not': 2, 'imply': 3 }
-    }
+        mps: 1.5, costW: { 'phi': 2, 'psi': 2, 'not': 2, 'imply': 3 }
+    },
+    'Theorem mp2': {
+        func: '⊢ 𝜑 & ⊢ 𝜓 & ⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ 𝜒',
+        mps: 1, costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'imply': 2 },
+                costT: { 'Axiom ax-mp': 2 }
+    },
+
+    // '': {
+    //     func: '',
+    //     mps: 1, cost: { '': 1 },
+    // },
 };
 
 const upgrades = {
@@ -63,7 +73,7 @@ let characterCost = {};
 let visibleUpgrades = [];
 let purchasedUpgrades = [];
 let visibleTheorems = [];
-let purchasedTheorems = [];
+let purchasedTheorems = {};
 
 function updateMetaCount() {
     metaCountElem.textContent = `${metaCount.toFixed(2)} Metas`;
@@ -142,22 +152,48 @@ function load() {
 }
 
 function theoremCanSeeCharacter(theorem) {
-    return Object.entries(theorem.cost).every(([id, cost]) => {
+    let costW = Object.entries(theorem.costW).every(([id, cost]) => {
         c = purchasedCharacters[id];
         return c >= cost - 1 && c != 0;
-    });
+    })
+    let costT = true;
+    if (theorem.costT) {
+        Object.entries(theorem.costT || {}).every(([id, cost]) => {
+            c = purchasedTheorems[id];
+            return c >= cost - 1 && c != 0;
+        });
+    }
+    return costW && costT;
 }
 
 function theoremCanPurchaseCharacter(theorem) {
-    return Object.entries(theorem.cost).every(([id, cost]) => {
+    let costW = Object.entries(theorem.costW).every(([id, cost]) => {
         c = purchasedCharacters[id];
         return c >= cost;
+    })
+    let costT = true;
+    if (theorem.costT) {
+        costT = Object.entries(theorem.costT || {}).every(([id, cost]) => {
+            c = purchasedTheorems[id];
+            return c >= cost;
+        });
+    }
+    return costW && costT;
+}
+
+function removeCost(theorem) {
+    Object.entries(theorem.costW).forEach(([charID, cost]) => {
+        purchasedCharacters[charID] -= cost;
     });
+    if (theorem.costT) {
+        Object.entries(theorem.costT).forEach(([theoremID, cost]) => {
+            purchasedTheorems[theoremID] -= cost;
+        });
+    }
 }
 
 function updateCharacterPrice(id) {
-    const character = characters[id];
-    characterCost[id] = (purchasedCharacters[id] + character.baseCost) ** characterCostExp;
+    characterCost[id] *= characterCostMult;
 }
 
 // Purchase a character
@@ -166,10 +202,11 @@ function purchaseCharacter(id) {
     if (metaCount >= characterCost[id]) {
         metaCount -= characterCost[id];
         purchasedCharacters[id]++;
+        updateCharacterPrice(id);
         regenerateCharacterButtons();
         // check if a theorem can be purchased
         for (const [id, theorem] of Object.entries(theorems)) {
-            if (theoremCanSeeCharacter(theorem) && !visibleTheorems.includes(id) && !purchasedTheorems.includes(id)) {
+            if (theoremCanSeeCharacter(theorem) && !visibleTheorems.includes(id) && !purchasedTheorems[id]) {
                 visibleTheorems.push(id);
                 regenerateTheorems();
             }
@@ -201,15 +238,12 @@ function purchaseTheorem(id) {
     const theorem = theorems[id];
     const canPurchase = theoremCanPurchaseCharacter(theorem);
     if (canPurchase) {
-        Object.entries(theorem.cost).forEach(([charID, cost]) => {
-            purchasedCharacters[charID] -= cost;
-        });
+        removeCost(theorem);
         metasPerSecond += theorem.mps;
-        if (theorem.purchase) {
+        if (theorem.purchase && !visibleUpgrades.includes(theorem.purchase) && !purchasedUpgrades.includes(theorem.purchase)) {
             visibleUpgrades.push(theorem.purchase);
         }
-        visibleTheorems = visibleTheorems.filter(tid => tid !== id);
-        purchasedTheorems.push(id);
+        purchasedTheorems[id]++;
         
         regenerateCharacterButtons();
         regenerateTheorems();
@@ -230,7 +264,6 @@ function generateCharacterButtons() {
         const character = characters[id];
         purchasedCharacters[id] = purchasedCharacters[id] || 0;
         characterCost[id] = characterCost[id] || character.baseCost;
-        updateCharacterPrice(id);
 
         // Add character content
         button.innerHTML = `
@@ -278,8 +311,10 @@ function regenerateUpgrades() {
     generateUpgrades();
 }
 
-function genCostStr(cost) {
-    return Object.entries(cost).map(([key, value]) => `${value}x ${key}`).join(', ');
+function genCostStr(theorem) {
+    let costW = Object.entries(theorem.costW).map(([key, value]) => `${value} ${key}`).join(', ');
+    let costT = Object.entries(theorem.costT || {}).map(([key, value]) => `${value} ${key}`).join(', ');
+    return `${costW}${costT ? ', ' + costT : ''}`;
 }
 
 function generateTheorems() {
@@ -289,11 +324,14 @@ function generateTheorems() {
         button.classList.add('theorem-button');
         button.id = theorem.name;
 
+        purchasedTheorems[id] = purchasedTheorems[id] || 0;
+
         // Add character content
         button.innerHTML = `
             <h3>${id}</h3>
             <p>${theorem.func}</p>
-            <p>Requires: ${genCostStr(theorem.cost)}</p>
+            <p><strong>${genCostStr(theorem)}</strong></p>
+            <p>Owned: ${purchasedTheorems[id]}</p>
         `;
 
         // Event listener for purchasing character
@@ -321,7 +359,7 @@ function resetGame() {
     visibleUpgrades = [];
     purchasedUpgrades = [];
     visibleTheorems = [];
-    purchasedTheorems = [];
+    purchasedTheorems = {};
     save();
     location.reload();
 }
