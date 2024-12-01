@@ -3,9 +3,9 @@ let metaCount = baseMetaCount;
 let metasPerSecond = 0.5;
 
 const characters = {
-    'phi': { symbol: '𝜑', name: 'Phi', baseCost: 5 },
-    'psi': { symbol: '𝜓', name: 'Psi', baseCost: 8 },
-    'chi': { symbol: '𝜒', name: 'Chi', baseCost: 15 },
+    'phi': { symbol: '𝜑', name: 'Phi', baseCost: 4 },
+    'psi': { symbol: '𝜓', name: 'Psi', baseCost: 7 },
+    'chi': { symbol: '𝜒', name: 'Chi', baseCost: 13 },
     'imply': { symbol: '→', name: 'Imply', baseCost: 6 },
     'not': { symbol: '¬', name: 'Not', baseCost: 12 },
     'bicon': { symbol: '↔', name: 'Bi-con', baseCost: 10 },
@@ -52,6 +52,7 @@ const upgrades = {
 
 // DOM elements
 const metaCountElem = document.getElementById('metaCount');
+const mpsCountElem = document.getElementById('mpsCount');
 const characterGrid = document.querySelector('.character-grid');
 const upgradeContainer = document.querySelector('.upgrades');
 const theoremsContainer = document.querySelector('.theorems');
@@ -66,6 +67,7 @@ let purchasedTheorems = [];
 
 function updateMetaCount() {
     metaCountElem.textContent = `${metaCount.toFixed(2)} Metas`;
+    mpsCountElem.textContent = `${metasPerSecond.toFixed(1)} m/s`;
 }
 
 // Automatically give metas per second based on metasPerSecond
@@ -78,6 +80,7 @@ setInterval(() => {
 
 function save() {
     localStorage.setItem('metaCount', metaCount);
+    localStorage.setItem('metaCount', metasPerSecond);
     localStorage.setItem('visibleCharacters', JSON.stringify(visibleCharacters));
     localStorage.setItem('purchasedCharacters', JSON.stringify(purchasedCharacters));
     localStorage.setItem('characterCost', JSON.stringify(characterCost));
@@ -92,6 +95,11 @@ function load() {
     if (savedMetaCount) {
         metaCount = parseFloat(savedMetaCount);
         updateMetaCount();
+    }
+
+    const savedMetasPerSecond = localStorage.getItem('metasPerSecond');
+    if (savedMetasPerSecond) {
+        metasPerSecond = parseFloat(savedMetasPerSecond);
     }
 
     const savedVisibleCharacters = localStorage.getItem('visibleCharacters');
