@@ -80,7 +80,7 @@ setInterval(() => {
 
 function save() {
     localStorage.setItem('metaCount', metaCount);
-    localStorage.setItem('metaCount', metasPerSecond);
+    localStorage.setItem('metasPerSecond', metasPerSecond);
     localStorage.setItem('visibleCharacters', JSON.stringify(visibleCharacters));
     localStorage.setItem('purchasedCharacters', JSON.stringify(purchasedCharacters));
     localStorage.setItem('characterCost', JSON.stringify(characterCost));
@@ -100,6 +100,7 @@ function load() {
     const savedMetasPerSecond = localStorage.getItem('metasPerSecond');
     if (savedMetasPerSecond) {
         metasPerSecond = parseFloat(savedMetasPerSecond);
+        updateMetaCount();
     }
 
     const savedVisibleCharacters = localStorage.getItem('visibleCharacters');
@@ -110,7 +111,6 @@ function load() {
     const savedPurchasedCharacters = localStorage.getItem('purchasedCharacters');
     if (savedPurchasedCharacters) {
         purchasedCharacters = JSON.parse(savedPurchasedCharacters);
-        console.log(purchasedCharacters)
     }
 
     const savedCharacterCost = localStorage.getItem('characterCost');

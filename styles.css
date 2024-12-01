@@ -9,8 +9,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
-    margin: 50px auto;
+    margin: 5% 2%;
     background: #ffffff;
     padding: 20px;
     border-radius: 8px;
@@ -241,4 +240,11 @@ button:hover {
 
 h2 { /* Lol */
     text-align: center;
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: #777;
 }
