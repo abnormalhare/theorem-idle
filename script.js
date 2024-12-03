@@ -4,11 +4,11 @@ let metaCountDisp = metaCount;
 let metasPerSecond = 0.5;
 
 const characters = {
-    'phi': { symbol: '𝜑', name: 'Phi', baseCost: 4 },
-    'psi': { symbol: '𝜓', name: 'Psi', baseCost: 7 },
-    'chi': { symbol: '𝜒', name: 'Chi', baseCost: 13 },
-    'imply': { symbol: '→', name: 'Imply', baseCost: 6 },
-    'not': { symbol: '¬', name: 'Not', baseCost: 12 },
+    'phi': { symbol: '𝜑', name: 'Phi', baseCost: 2 },
+    'psi': { symbol: '𝜓', name: 'Psi', baseCost: 4 },
+    'chi': { symbol: '𝜒', name: 'Chi', baseCost: 6 },
+    'imply': { symbol: '→', name: 'Imply', baseCost: 4 },
+    'not': { symbol: '¬', name: 'Not', baseCost: 7 },
     'bicon': { symbol: '↔', name: 'Bi-con', baseCost: 10 },
     'and': { symbol: '^', name: 'And', baseCost: 15 },
 };
@@ -18,40 +18,50 @@ const characterCostAdd = 1.5;
 const theorems = {
     'Theorem idi':  {
         func: '⊢ 𝜑 ⇒ ⊢ 𝜑',
-        mps: .5,  costW: { 'phi': 2 }
+        mps: .25,  costW: { 'phi': 1 }
     },
     'Theorem a1ii': {
         func: '⊢ 𝜑 & ⊢ 𝜓 ⇒ ⊢ 𝜑',
-        mps: 1,   costW: { 'phi': 2, 'psi': 1 },
+        mps: .5,   costW: { 'phi': 1, 'psi': 1 },
         purchase: 'Syntax wi'
     },
     'Axiom ax-mp': {
         func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ 𝜓',
-        mps: 2,   costW: { 'phi': 2, 'psi': 2, 'imply': 1 },
+        mps: 1,   costW: { 'phi': 2, 'psi': 1, 'imply': 1 },
         purchase: 'Syntax chi'
     },
     'Axiom ax-1': {
         func: '⊢ (𝜑 → (𝜓 → 𝜑))',
-        mps: 2,   costW: { 'phi': 2, 'psi': 1, 'imply': 2 },
+        mps: 1,   costW: { 'phi': 2, 'psi': 1, 'imply': 2 },
         purchase: 'Syntax wn'
     },
     'Axiom ax-2': {
         func: '⊢ ((𝜑 → (𝜓 → 𝜒)) → ((𝜑 → 𝜓) → (𝜑 → 𝜒)))',
-        mps: 4,   costW: { 'phi': 3, 'psi': 2, 'chi': 2, 'imply': 5 }
+        mps: 2,   costW: { 'phi': 3, 'psi': 2, 'chi': 2, 'imply': 5 }
     },
     'Axiom ax-3': {
         func: '⊢ ((¬𝜑 → ¬𝜓) → (𝜓 → 𝜑))',
-        mps: 2.5, costW: { 'phi': 2, 'psi': 2, 'not': 2, 'imply': 3 }
+        mps: 1.5, costW: { 'phi': 2, 'psi': 2, 'not': 2, 'imply': 3 }
     },
     'Theorem mp2': {
         func: '⊢ 𝜑 & ⊢ 𝜓 & ⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ 𝜒',
-        mps: 1, costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'imply': 2 },
+        mps: 4, costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 2 },
                 costT: { 'Axiom ax-mp': 2 }
     },
     'Theorem mp2b': {
         func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) ⇒ ⊢ 𝜒',
-        mps: 1, costW: { '': 1 },
-                costT: { '': 1 }
+        mps: 4, costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 2 },
+                costT: { 'Axiom ax-mp': 2 }
+    },
+    'Theorem a1i': {
+        func: '⊢ 𝜑 ⇒ ⊢ (𝜓 → 𝜑)',
+        mps: 3, costW: { 'phi': 1, 'psi': 1 },
+                costT: { 'Axiom ax-1': 1, 'Axiom ax-mp': 1 }
+    },
+    'Theorem 2a1i': {
+        func: '⊢ 𝜑 ⇒ ⊢ (𝜓 → (𝜒 → 𝜑))',
+        mps: 12, costW: { 'phi': 1, 'psi': 1, 'chi': 1 },
+                costT: { 'Theorem a1i': 2 }
     },
 
     // '': {
@@ -82,6 +92,9 @@ let purchasedUpgrades = [];
 let visibleTheorems = [];
 let purchasedTheorems = {};
 
+const SECOND = 1000;
+const updateMS = 250;
+
 function updateMetaCount() {
     const startTime = performance.now();
 
@@ -91,7 +104,7 @@ function updateMetaCount() {
 
     function animate(time) {
         const elapsed = time - startTime;
-        const progress = elapsed / 1000;
+        const progress = elapsed / updateMS;
 
         metaCountDisp = startPoint + distance * progress;
 
@@ -101,20 +114,20 @@ function updateMetaCount() {
     }
     requestAnimationFrame(animate);
 
-    mpsCountElem.textContent = `${metasPerSecond.toFixed(1)} m/s`;
+    mpsCountElem.textContent = `${metasPerSecond.toFixed(2)} m/s`;
 }
 
 // Automatically give metas per second based on metasPerSecond
 
 function updateMeta() {
-    metaCount += metasPerSecond;
+    metaCount += metasPerSecond * (updateMS / SECOND);
     updateMetaCount();
     localStorage.setItem('metaCount', metaCount);
 }
 
 setInterval(() => {
     updateMeta();
-}, 1000);
+}, updateMS);
 
 function save() {
     localStorage.setItem('metaCount', metaCount);
@@ -186,9 +199,9 @@ function theoremCanSeeCharacter(theorem) {
     })
     let costT = true;
     if (theorem.costT) {
-        Object.entries(theorem.costT || {}).every(([id, cost]) => {
+        costT = Object.entries(theorem.costT || {}).every(([id, cost]) => {
             c = purchasedTheorems[id];
-            return c >= cost - 1 && c != 0;
+            return c >= cost - 1 && c;
         });
     }
     return costW && costT;
@@ -216,6 +229,7 @@ function removeCost(theorem) {
     if (theorem.costT) {
         Object.entries(theorem.costT).forEach(([theoremID, cost]) => {
             purchasedTheorems[theoremID] -= cost;
+            metasPerSecond -= theorems[theoremID].mps;
         });
     }
 }
