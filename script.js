@@ -60,7 +60,7 @@ const theorems = {
     },
     'Theorem 2a1i': {
         func: '⊢ 𝜑 ⇒ ⊢ (𝜓 → (𝜒 → 𝜑))',
-        mps: 12,   costW: { 'phi': 1, 'psi': 1, 'chi': 1 },
+        mps: 7,   costW: { 'phi': 1, 'psi': 1, 'chi': 1 },
                    costT: { 'Theorem a1i': 2 }
     },
     'Theorem mp1i': {
@@ -77,6 +77,11 @@ const theorems = {
         func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ (𝜑 → 𝜒)',
         mps: 7.5,  costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 3 },
                    costT: { 'Theorem a2i': 1, 'Axiom ax-mp': 1 }
+    },
+    'Theorem imim2i': {
+        func: '⊢ (𝜑 → 𝜓) ⇒ ⊢ ((𝜒 → 𝜑) → (𝜒 → 𝜓))',
+        mps: 9,  costW: { 'phi': 1, 'psi': 1, 'chi': 1, 'imply': 1 },
+                   costT: { 'Theorem a1i': 1, 'Theorem a2i': 1 }
     }
 
     // '': {
@@ -123,7 +128,6 @@ requestAnimationFrame(updateMeta);
 
 function save() {
     localStorage.setItem('metaCount', metaCount);
-    localStorage.setItem('metasPerSecond', metasPerSecond);
     localStorage.setItem('visibleCharacters', JSON.stringify(visibleCharacters));
     localStorage.setItem('purchasedCharacters', JSON.stringify(purchasedCharacters));
     localStorage.setItem('characterCost', JSON.stringify(characterCost));
@@ -133,15 +137,16 @@ function save() {
     localStorage.setItem('purchasedUpgrades', JSON.stringify(purchasedUpgrades));
 }
 
+function calcMPS() {
+    for (var key in purchasedTheorems) {
+        metasPerSecond += theorems[key].mps * purchasedTheorems[key];
+    }
+}
+
 function load() {
     const savedMetaCount = localStorage.getItem('metaCount');
     if (savedMetaCount) {
         metaCount = parseFloat(savedMetaCount);
-    }
-
-    const savedMetasPerSecond = localStorage.getItem('metasPerSecond');
-    if (savedMetasPerSecond) {
-        metasPerSecond = parseFloat(savedMetasPerSecond);
     }
 
     const savedVisibleCharacters = localStorage.getItem('visibleCharacters');
@@ -179,6 +184,7 @@ function load() {
         purchasedUpgrades = JSON.parse(savedPurchasedUpgrades);
     }
 
+    calcMPS();
     save();
 }
 
