@@ -200,9 +200,12 @@ button:hover {
 .theorems,
 .upgrades {
     display: flex;
+    flex: 1 1 auto;
+    height: 500px;
     flex-direction: column;
     gap: 15px;
     text-align: center;
+    overflow-y: scroll;
 }
 
 /* Upgrade button styling */

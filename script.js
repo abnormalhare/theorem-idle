@@ -27,42 +27,57 @@ const theorems = {
     },
     'Axiom ax-mp': {
         func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ 𝜓',
-        mps: 1,   costW: { 'phi': 2, 'psi': 1, 'imply': 1 },
+        mps: 1,    costW: { 'phi': 2, 'psi': 1, 'imply': 1 },
         purchase: 'Syntax chi'
     },
     'Axiom ax-1': {
         func: '⊢ (𝜑 → (𝜓 → 𝜑))',
-        mps: 1,   costW: { 'phi': 2, 'psi': 1, 'imply': 2 },
+        mps: 1,    costW: { 'phi': 2, 'psi': 1, 'imply': 2 },
         purchase: 'Syntax wn'
     },
     'Axiom ax-2': {
         func: '⊢ ((𝜑 → (𝜓 → 𝜒)) → ((𝜑 → 𝜓) → (𝜑 → 𝜒)))',
-        mps: 2,   costW: { 'phi': 3, 'psi': 2, 'chi': 2, 'imply': 5 }
+        mps: 2,    costW: { 'phi': 3, 'psi': 2, 'chi': 2, 'imply': 5 }
     },
     'Axiom ax-3': {
         func: '⊢ ((¬𝜑 → ¬𝜓) → (𝜓 → 𝜑))',
-        mps: 1.5, costW: { 'phi': 2, 'psi': 2, 'not': 2, 'imply': 3 }
+        mps: 1.5,  costW: { 'phi': 2, 'psi': 2, 'not': 2, 'imply': 3 }
     },
     'Theorem mp2': {
         func: '⊢ 𝜑 & ⊢ 𝜓 & ⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ 𝜒',
-        mps: 4, costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 2 },
-                costT: { 'Axiom ax-mp': 2 }
+        mps: 4,    costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 2 },
+                   costT: { 'Axiom ax-mp': 2 }
     },
     'Theorem mp2b': {
         func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) ⇒ ⊢ 𝜒',
-        mps: 4, costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 2 },
-                costT: { 'Axiom ax-mp': 2 }
+        mps: 4,    costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 2 },
+                   costT: { 'Axiom ax-mp': 2 }
     },
     'Theorem a1i': {
         func: '⊢ 𝜑 ⇒ ⊢ (𝜓 → 𝜑)',
-        mps: 3, costW: { 'phi': 1, 'psi': 1 },
-                costT: { 'Axiom ax-1': 1, 'Axiom ax-mp': 1 }
+        mps: 3,    costW: { 'phi': 1, 'psi': 1 },
+                   costT: { 'Axiom ax-1': 1, 'Axiom ax-mp': 1 }
     },
     'Theorem 2a1i': {
         func: '⊢ 𝜑 ⇒ ⊢ (𝜓 → (𝜒 → 𝜑))',
-        mps: 12, costW: { 'phi': 1, 'psi': 1, 'chi': 1 },
-                costT: { 'Theorem a1i': 2 }
+        mps: 12,   costW: { 'phi': 1, 'psi': 1, 'chi': 1 },
+                   costT: { 'Theorem a1i': 2 }
     },
+    'Theorem mp1i': {
+        func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ (𝜒 → 𝜓)',
+        mps: 5,    costW: { 'phi': 2, 'psi': 1, 'chi': 1, 'imply': 1 },
+                   costT: { 'Axiom ax-mp': 1, 'Theorem a1i': 1 }
+    },
+    'Theorem a2i': {
+        func: '⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ ((𝜑 → 𝜓) → (𝜑 → 𝜒))',
+        mps: 5,    costW: { 'phi': 1, 'psi': 1, 'chi': 1, 'imply': 2 },
+                   costT: { 'Axiom ax-2': 1, 'Axiom ax-mp': 1 }
+    },
+    'Theorem mpd': {
+        func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ (𝜑 → 𝜒)',
+        mps: 7.5,  costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 3 },
+                   costT: { 'Theorem a2i': 1, 'Axiom ax-mp': 1 }
+    }
 
     // '': {
     //     func: '',
