@@ -93,41 +93,18 @@ let visibleTheorems = [];
 let purchasedTheorems = {};
 
 const SECOND = 1000;
-const updateMS = 250;
 
-function updateMetaCount() {
-    const startTime = performance.now();
-
-    const startPoint = metaCountDisp;
-    const endPoint = metaCount;
-    const distance = endPoint - startPoint;
-
-    function animate(time) {
-        const elapsed = time - startTime;
-        const progress = elapsed / updateMS;
-
-        metaCountDisp = startPoint + distance * progress;
-
-        metaCountElem.textContent = `${metaCountDisp.toFixed(2)} Metas`;
-
-        if (progress < 1) requestAnimationFrame(animate);
-    }
-    requestAnimationFrame(animate);
-
+let prevTime = performance.now();
+function updateMeta(time) {
+    metaCount += metasPerSecond * ((time - prevTime) / SECOND);
+    prevTime = time;
+    metaCountElem.textContent = `${metaCount.toFixed(2)} Metas`;
     mpsCountElem.textContent = `${metasPerSecond.toFixed(2)} m/s`;
-}
-
-// Automatically give metas per second based on metasPerSecond
-
-function updateMeta() {
-    metaCount += metasPerSecond * (updateMS / SECOND);
-    updateMetaCount();
     localStorage.setItem('metaCount', metaCount);
+    requestAnimationFrame(updateMeta);
 }
 
-setInterval(() => {
-    updateMeta();
-}, updateMS);
+requestAnimationFrame(updateMeta);
 
 function save() {
     localStorage.setItem('metaCount', metaCount);
@@ -145,13 +122,11 @@ function load() {
     const savedMetaCount = localStorage.getItem('metaCount');
     if (savedMetaCount) {
         metaCount = parseFloat(savedMetaCount);
-        updateMetaCount();
     }
 
     const savedMetasPerSecond = localStorage.getItem('metasPerSecond');
     if (savedMetasPerSecond) {
         metasPerSecond = parseFloat(savedMetasPerSecond);
-        updateMetaCount();
     }
 
     const savedVisibleCharacters = localStorage.getItem('visibleCharacters');
@@ -255,7 +230,6 @@ function purchaseCharacter(id) {
         }
 
         save();
-        updateMetaCount();
     }
 }
 
@@ -272,7 +246,6 @@ function purchaseUpgrade(id) {
         regenerateUpgrades();
 
         save();
-        updateMetaCount();
     }
 }
 
@@ -283,7 +256,6 @@ function purchaseTheorem(id) {
         purchasedTheorems[id] = 10;
         regenerateTheorems();
         save();
-        updateMetaCount();
     }
     if (canPurchase && purchasedTheorems[id] < 10) {
         removeCost(theorem);
@@ -298,7 +270,6 @@ function purchaseTheorem(id) {
         regenerateUpgrades();
 
         save();
-        updateMetaCount();
     }
 }
 
@@ -406,7 +377,6 @@ function regenerateTheorems() {
 function resetGame() {
     metaCount = baseMetaCount;
     metasPerSecond = 0.5;
-    updateMetaCount();
     visibleCharacters = ['phi', 'psi'];
     purchasedCharacters = {};
     characterCost = {};
