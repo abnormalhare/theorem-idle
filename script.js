@@ -4,13 +4,15 @@ let metaCountDisp = metaCount;
 let metasPerSecond = 0.5;
 
 const characters = {
-    'phi': { symbol: '𝜑', name: 'Phi', baseCost: 2 },
-    'psi': { symbol: '𝜓', name: 'Psi', baseCost: 4 },
-    'chi': { symbol: '𝜒', name: 'Chi', baseCost: 6 },
+    'phi':   { symbol: '𝜑', name: 'Phi', baseCost: 2 },
+    'psi':   { symbol: '𝜓', name: 'Psi', baseCost: 4 },
+    'chi':   { symbol: '𝜒', name: 'Chi', baseCost: 6 },
+    'theta': { symbol: '𝜃', name: 'Theta', baseCost: 12 },
+    'tau':   { symbol: '𝜏', name: 'Tau', baseCost: 20 },
     'imply': { symbol: '→', name: 'Imply', baseCost: 4 },
-    'not': { symbol: '¬', name: 'Not', baseCost: 7 },
+    'not':   { symbol: '¬', name: 'Not', baseCost: 7 },
     'bicon': { symbol: '↔', name: 'Bi-con', baseCost: 10 },
-    'and': { symbol: '^', name: 'And', baseCost: 15 },
+    'and':   { symbol: '^', name: 'And', baseCost: 15 },
 };
 
 const characterCostAdd = 1.5;
@@ -28,7 +30,8 @@ const theorems = {
     'Axiom ax-mp': {
         func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ 𝜓',
         mps: 1,    costW: { 'phi': 2, 'psi': 1, 'imply': 1 },
-        purchase: 'Syntax chi'
+        purchase: 'Syntax chi',
+        limit: 25
     },
     'Axiom ax-1': {
         func: '⊢ (𝜑 → (𝜓 → 𝜑))',
@@ -80,8 +83,20 @@ const theorems = {
     },
     'Theorem imim2i': {
         func: '⊢ (𝜑 → 𝜓) ⇒ ⊢ ((𝜒 → 𝜑) → (𝜒 → 𝜓))',
-        mps: 9,  costW: { 'phi': 1, 'psi': 1, 'chi': 1, 'imply': 1 },
+        mps: 9,    costW: { 'phi': 1, 'psi': 1, 'chi': 1, 'imply': 1 },
                    costT: { 'Theorem a1i': 1, 'Theorem a2i': 1 }
+    },
+    'Theorem syl': {
+        func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) ⇒ ⊢ (𝜑 → 𝜒)',
+        mps: 12,   costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 2 },
+                   costT: { 'Theorem a1i': 1, 'Theorem mpd': 1 },
+        purchase: 'Syntax theta'
+    },
+    'Theorem 3syl': {
+        func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) & ⊢ (𝜒 → 𝜃) ⇒ ⊢ (𝜑 → 𝜃)',
+        mps: 30,   costW: { 'phi': 1, 'psi': 2, 'chi': 2, 'theta': 1, 'imply': 3 },
+                   costT: { 'Theorem syl': 2 },
+        purchase: 'Syntax tau'
     }
 
     // '': {
@@ -93,8 +108,10 @@ const theorems = {
 
 const upgrades = {
     'Syntax wi': { symbol: '→', cost: 10, unlock: 'imply' },
-    'Syntax wn': { symbol: '¬', cost: 20, unlock: 'not' },
-    'Syntax chi': { symbol: '𝜒', cost: 35, unlock: 'chi' }
+    'Syntax wn': { symbol: '¬', cost: 40, unlock: 'not' },
+    'Syntax chi': { symbol: '𝜒', cost: 80, unlock: 'chi' },
+    'Syntax theta': { symbol: '𝜃', cost: 200, unlock: 'theta' },
+    'Syntax tau': { symbol: '𝜏', cost: 400, unlock: 'tau' },
 };
 
 // DOM elements
@@ -273,12 +290,14 @@ function purchaseUpgrade(id) {
 function purchaseTheorem(id) {
     const theorem = theorems[id];
     const canPurchase = theoremCanPurchaseCharacter(theorem);
-    if (purchasedTheorems[id] > 10) {
+    if (purchasedTheorems[id] > 10 && !theorem.limit) {
         purchasedTheorems[id] = 10;
         regenerateTheorems();
         save();
     }
-    if (canPurchase && purchasedTheorems[id] < 10) {
+
+    let limit = theorem.limit || 10;
+    if ((canPurchase && purchasedTheorems[id] < limit)) {
         removeCost(theorem);
         metasPerSecond += theorem.mps;
         if (theorem.purchase && !visibleUpgrades.includes(theorem.purchase) && !purchasedUpgrades.includes(theorem.purchase)) {
@@ -367,6 +386,7 @@ function generateTheorems() {
         button.id = theorem.name;
 
         purchasedTheorems[id] = purchasedTheorems[id] || 0;
+        let limit = theorem.limit || 10;
 
         // Add character content
         button.innerHTML = `
@@ -375,7 +395,7 @@ function generateTheorems() {
                 <p>${theorem.func}</p>
             </div>
             <div class="theorem-button-bottom">
-                <p>Owned: ${purchasedTheorems[id]}/10</p>
+                <p>Owned: ${purchasedTheorems[id]}/${limit}</p>
                 <p><strong>${genCostStr(theorem)}</strong></p>
             </div>
         `;

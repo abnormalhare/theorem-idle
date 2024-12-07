@@ -157,6 +157,9 @@ button:hover {
     grid-template-columns: repeat(3, 1fr);  /* 3 columns */
     grid-gap: 20px;
     padding: 20px;
+    height: 500px;
+    text-align: center;
+    overflow-y: scroll;
 }
 
 /* Character button styling */
@@ -201,7 +204,7 @@ button:hover {
 .upgrades {
     display: flex;
     flex: 1 1 auto;
-    height: 500px;
+    height: 550px;
     flex-direction: column;
     gap: 15px;
     text-align: center;
