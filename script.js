@@ -2,18 +2,22 @@ const baseMetaCount = 0;
 let metaCount = baseMetaCount;
 let metaCountDisp = metaCount;
 let metasPerSecond = 0.5;
+let rebirthCount = 0;
+let rebirthBonus = 1;
 
 const characters = {
-    'phi': { symbol: '𝜑', name: 'Phi', baseCost: 2 },
-    'psi': { symbol: '𝜓', name: 'Psi', baseCost: 4 },
-    'chi': { symbol: '𝜒', name: 'Chi', baseCost: 6 },
+    'phi':   { symbol: '𝜑', name: 'Phi', baseCost: 2 },
+    'psi':   { symbol: '𝜓', name: 'Psi', baseCost: 4 },
+    'chi':   { symbol: '𝜒', name: 'Chi', baseCost: 6 },
+    'theta': { symbol: '𝜃', name: 'Theta', baseCost: 12 },
     'imply': { symbol: '→', name: 'Imply', baseCost: 4 },
-    'not': { symbol: '¬', name: 'Not', baseCost: 7 },
-    'bicon': { symbol: '↔', name: 'Bi-con', baseCost: 10 },
-    'and': { symbol: '^', name: 'And', baseCost: 15 },
+    'not':   { symbol: '¬', name: 'Not', baseCost: 7 },
+    'bicon': { symbol: '↔', name: 'Biconditonal', baseCost: 10 },
+    'and':   { symbol: '^', name: 'And', baseCost: 15 },
 };
 
 const characterCostAdd = 1.5;
+var theoremMaxCnt = 10;
 
 const theorems = {
     'Theorem idi':  {
@@ -80,8 +84,30 @@ const theorems = {
     },
     'Theorem imim2i': {
         func: '⊢ (𝜑 → 𝜓) ⇒ ⊢ ((𝜒 → 𝜑) → (𝜒 → 𝜓))',
-        mps: 9,  costW: { 'phi': 1, 'psi': 1, 'chi': 1, 'imply': 1 },
+        mps: 9,    costW: { 'phi': 1, 'psi': 1, 'chi': 1, 'imply': 1 },
                    costT: { 'Theorem a1i': 1, 'Theorem a2i': 1 }
+    },
+    'Theorem syl': {
+        func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) ⇒ ⊢ (𝜑 → 𝜒)',
+        mps: 12,   costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 2 },
+                   costT: { 'Theorem a1i': 1, 'Theorem mpd': 1 },
+        purchase: 'Syntax theta'
+    },
+    'Theorem 3syl': {
+        func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) & ⊢ (𝜒 → 𝜃) ⇒ ⊢ (𝜑 → 𝜃)',
+        mps: 12,   costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'theta': 1, 'imply': 2 },
+                   costT: { 'Theorem syl': 2 },
+        purchase: 'Syntax tau'
+    },
+    'Theorem 4syl': {
+        func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) & ⊢ (𝜒 → 𝜃) & ⊢ (𝜃 → 𝜏) ⇒ ⊢ (𝜑 → 𝜏)',
+        mps: 12,   costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'theta': 2, 'tau': 1, 'imply': 2 },
+                   costT: { 'Theorem 3syl': 1, 'Theorem syl': 1 },
+    },
+    'Theorem mpi': {
+        func: '⊢ 𝜓 & ⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ (𝜑 → 𝜒)',
+        mps: 9,   costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'imply': 2 },
+                  costT: { 'Theorem a1i': 1, 'Theorem mpd': 1 }
     }
 
     // '': {
@@ -92,9 +118,11 @@ const theorems = {
 };
 
 const upgrades = {
-    'Syntax wi': { symbol: '→', cost: 10, unlock: 'imply' },
-    'Syntax wn': { symbol: '¬', cost: 20, unlock: 'not' },
-    'Syntax chi': { symbol: '𝜒', cost: 35, unlock: 'chi' }
+    'Syntax wi':    { symbol: '→', cost: 10,  unlock: 'imply' },
+    'Syntax wn':    { symbol: '¬', cost: 40,  unlock: 'not'   },
+    'Syntax chi':   { symbol: '𝜒', cost: 80,  unlock: 'chi'   },
+    'Syntax theta': { symbol: '𝜃', cost: 200, unlock: 'theta' },
+    'Syntax tau':   { symbol: '𝜏', cost: 400, unlock: 'tau'   }
 };
 
 // DOM elements
@@ -103,6 +131,7 @@ const mpsCountElem = document.getElementById('mpsCount');
 const characterGrid = document.querySelector('.character-grid');
 const upgradeContainer = document.querySelector('.upgrades');
 const theoremsContainer = document.querySelector('.theorems');
+const rebirthInfo = document.getElementById('rebirthInfo');
 
 let visibleCharacters = ['phi', 'psi'];
 let purchasedCharacters = {};
@@ -125,6 +154,9 @@ function updateMeta(time) {
 }
 
 requestAnimationFrame(updateMeta);
+function updateRebirthInfo() {
+    rebirthInfo.textContent = `Rebirths: ${rebirthCount} | Bonus: +${((rebirthBonus-1)*100).toFixed(0)}% m/s`;
+}
 
 function save() {
     localStorage.setItem('metaCount', metaCount);
@@ -135,11 +167,13 @@ function save() {
     localStorage.setItem('purchasedTheorems', JSON.stringify(purchasedTheorems));
     localStorage.setItem('visibleUpgrades', JSON.stringify(visibleUpgrades));
     localStorage.setItem('purchasedUpgrades', JSON.stringify(purchasedUpgrades));
+    localStorage.setItem('rebirthCount', rebirthCount);
 }
 
 function calcMPS() {
+    metasPerSecond = 0.5 * rebirthBonus; // base mps with rebirth bonus
     for (var key in purchasedTheorems) {
-        metasPerSecond += theorems[key].mps * purchasedTheorems[key];
+        metasPerSecond += theorems[key].mps * purchasedTheorems[key] * rebirthBonus;
     }
 }
 
@@ -183,6 +217,12 @@ function load() {
     if (savedPurchasedUpgrades) {
         purchasedUpgrades = JSON.parse(savedPurchasedUpgrades);
     }
+
+    const savedRebirthCount = localStorage.getItem('rebirthCount');
+    if (savedRebirthCount) {
+        rebirthCount = parseInt(savedRebirthCount, 10);
+    }
+    rebirthBonus = 1 + rebirthCount * 0.1;
 
     calcMPS();
     save();
@@ -273,12 +313,12 @@ function purchaseUpgrade(id) {
 function purchaseTheorem(id) {
     const theorem = theorems[id];
     const canPurchase = theoremCanPurchaseCharacter(theorem);
-    if (purchasedTheorems[id] > 10) {
-        purchasedTheorems[id] = 10;
+    if (purchasedTheorems[id] > theoremMaxCnt) {
+        purchasedTheorems[id] = theoremMaxCnt;
         regenerateTheorems();
         save();
     }
-    if (canPurchase && purchasedTheorems[id] < 10) {
+    if (canPurchase && purchasedTheorems[id] < theoremMaxCnt) {
         removeCost(theorem);
         metasPerSecond += theorem.mps;
         if (theorem.purchase && !visibleUpgrades.includes(theorem.purchase) && !purchasedUpgrades.includes(theorem.purchase)) {
@@ -375,7 +415,7 @@ function generateTheorems() {
                 <p>${theorem.func}</p>
             </div>
             <div class="theorem-button-bottom">
-                <p>Owned: ${purchasedTheorems[id]}/10</p>
+                <p>Owned: ${purchasedTheorems[id]}/${theoremMaxCnt}</p>
                 <p><strong>${genCostStr(theorem)}</strong></p>
             </div>
         `;
@@ -405,12 +445,16 @@ function resetGame() {
     purchasedUpgrades = [];
     visibleTheorems = [];
     purchasedTheorems = {};
+    theoremMaxCnt = 10;
+    rebirthCount = 0;
+    rebirthBonus = 1;
     save();
     location.reload();
 }
 
 const darkModeButton = document.getElementById('darkModeButton');
 const resetButton = document.getElementById('resetButton');
+const rebirthButton = document.getElementById('rebirthButton');
 
 darkModeButton.addEventListener('click', () => {
     const isDarkMode = document.body.classList.toggle('dark');
@@ -422,6 +466,15 @@ darkModeButton.addEventListener('click', () => {
 function updateDarkModeButton(isDarkMode) {
     darkModeButton.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
 }
+
+rebirthButton.addEventListener('click', () => {
+    if (metaCount >= Math.pow(10, rebirthCount + 4)) { // Example threshold for rebirth
+        performRebirth();
+    } else {
+        alert(`You need at least ${Math.pow(10, rebirthCount + 4)} Metas to rebirth!`);
+    }
+});
+
 
 // Load dark mode preference on page load
 window.addEventListener('DOMContentLoaded', () => {
@@ -441,4 +494,24 @@ window.addEventListener('DOMContentLoaded', () => {
     generateCharacterButtons();
     generateUpgrades();
     generateTheorems();
+    updateRebirthInfo();
 });
+
+function performRebirth() {
+    rebirthCount++;
+    rebirthBonus = 1 + rebirthCount * 0.1;
+    metaCount = baseMetaCount;
+    metasPerSecond = 0.5 * rebirthBonus;
+    visibleCharacters = ['phi', 'psi'];
+    purchasedCharacters = {};
+    characterCost = {};
+    visibleUpgrades = [];
+    purchasedUpgrades = [];
+    visibleTheorems = [];
+    purchasedTheorems = {};
+    save();
+    updateRebirthInfo();
+    regenerateCharacterButtons();
+    regenerateUpgrades();
+    regenerateTheorems();
+}

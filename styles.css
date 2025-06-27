@@ -157,6 +157,8 @@ button:hover {
     grid-template-columns: repeat(3, 1fr);  /* 3 columns */
     grid-gap: 20px;
     padding: 20px;
+    text-align: center;
+    overflow-y: scroll;
 }
 
 /* Character button styling */
@@ -169,6 +171,7 @@ button:hover {
     cursor: pointer;
     transition: background-color 0.3s, transform 0.1s ease-out;
     border: none;
+    height: 200px;
 }
 
 .character-button:hover {
@@ -257,6 +260,12 @@ button:hover {
     font-size: 1rem;
     margin: 5px 0;
     color: #f1fa8c;
+}
+
+.rebirth-info {
+    padding-left: 10px;
+    margin: 10px 0;
+    font-weight: bold;
 }
 
 h2 { /* Lol */
