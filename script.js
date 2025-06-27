@@ -224,7 +224,7 @@ function load() {
     if (savedRebirthCount) {
         rebirthCount = parseInt(savedRebirthCount, 10);
     }
-    rebirthBonus = 1 + rebirthCount * 0.1;
+    rebirthBonus = 1 + rebirthCount * 0.15;
 
     calcMPS();
     save();
@@ -504,7 +504,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function performRebirth() {
     rebirthCount++;
-    rebirthBonus = 1 + rebirthCount * 0.1;
+    rebirthBonus = 1 + rebirthCount * 0.15;
     metaCount = baseMetaCount;
     metasPerSecond = 0.5 * rebirthBonus;
     visibleCharacters = ['phi', 'psi'];
