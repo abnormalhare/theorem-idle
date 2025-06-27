@@ -10,6 +10,7 @@ const characters = {
     'psi':   { symbol: '𝜓', name: 'Psi', baseCost: 4 },
     'chi':   { symbol: '𝜒', name: 'Chi', baseCost: 6 },
     'theta': { symbol: '𝜃', name: 'Theta', baseCost: 12 },
+    'tau':   { symbol: '𝜏', name: 'Tau', baseCost: 20 },
     'imply': { symbol: '→', name: 'Imply', baseCost: 4 },
     'not':   { symbol: '¬', name: 'Not', baseCost: 7 },
     'bicon': { symbol: '↔', name: 'Biconditonal', baseCost: 10 },
@@ -32,7 +33,8 @@ const theorems = {
     'Axiom ax-mp': {
         func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ 𝜓',
         mps: 1,    costW: { 'phi': 2, 'psi': 1, 'imply': 1 },
-        purchase: 'Syntax chi'
+        purchase: 'Syntax chi',
+        limit: 25
     },
     'Axiom ax-1': {
         func: '⊢ (𝜑 → (𝜓 → 𝜑))',
@@ -313,12 +315,14 @@ function purchaseUpgrade(id) {
 function purchaseTheorem(id) {
     const theorem = theorems[id];
     const canPurchase = theoremCanPurchaseCharacter(theorem);
-    if (purchasedTheorems[id] > theoremMaxCnt) {
+    if (purchasedTheorems[id] > theoremMaxCnt && !theorem.limit) {
         purchasedTheorems[id] = theoremMaxCnt;
         regenerateTheorems();
         save();
     }
-    if (canPurchase && purchasedTheorems[id] < theoremMaxCnt) {
+
+    let limit = theorem.limit || theoremMaxCnt;
+    if ((canPurchase && purchasedTheorems[id] < limit)) {
         removeCost(theorem);
         metasPerSecond += theorem.mps;
         if (theorem.purchase && !visibleUpgrades.includes(theorem.purchase) && !purchasedUpgrades.includes(theorem.purchase)) {
@@ -407,6 +411,7 @@ function generateTheorems() {
         button.id = theorem.name;
 
         purchasedTheorems[id] = purchasedTheorems[id] || 0;
+        let limit = theorem.limit || 10;
 
         // Add character content
         button.innerHTML = `
@@ -415,7 +420,7 @@ function generateTheorems() {
                 <p>${theorem.func}</p>
             </div>
             <div class="theorem-button-bottom">
-                <p>Owned: ${purchasedTheorems[id]}/${theoremMaxCnt}</p>
+                <p>Owned: ${purchasedTheorems[id]}/${limit}</p>
                 <p><strong>${genCostStr(theorem)}</strong></p>
             </div>
         `;
