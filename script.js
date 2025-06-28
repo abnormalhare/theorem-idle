@@ -61,55 +61,65 @@ const theorems = {
     },
     'Theorem a1i': {
         func: '⊢ 𝜑 ⇒ ⊢ (𝜓 → 𝜑)',
-        mps: 3,    costW: { 'phi': 1, 'psi': 1 },
+        mps: 4,    costW: { 'phi': 1, 'psi': 1 },
                    costT: { 'Axiom ax-1': 1, 'Axiom ax-mp': 1 }
     },
     'Theorem 2a1i': {
         func: '⊢ 𝜑 ⇒ ⊢ (𝜓 → (𝜒 → 𝜑))',
-        mps: 7,   costW: { 'phi': 1, 'psi': 1, 'chi': 1 },
+        mps: 10,   costW: { 'phi': 1, 'psi': 1, 'chi': 1 },
                    costT: { 'Theorem a1i': 2 }
     },
     'Theorem mp1i': {
         func: '⊢ 𝜑 & ⊢ (𝜑 → 𝜓) ⇒ ⊢ (𝜒 → 𝜓)',
-        mps: 5,    costW: { 'phi': 2, 'psi': 1, 'chi': 1, 'imply': 1 },
+        mps: 9,    costW: { 'phi': 2, 'psi': 1, 'chi': 1, 'imply': 1 },
                    costT: { 'Axiom ax-mp': 1, 'Theorem a1i': 1 }
     },
     'Theorem a2i': {
         func: '⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ ((𝜑 → 𝜓) → (𝜑 → 𝜒))',
-        mps: 5,    costW: { 'phi': 1, 'psi': 1, 'chi': 1, 'imply': 2 },
+        mps: 9,    costW: { 'phi': 1, 'psi': 1, 'chi': 1, 'imply': 2 },
                    costT: { 'Axiom ax-2': 1, 'Axiom ax-mp': 1 }
     },
     'Theorem mpd': {
         func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ (𝜑 → 𝜒)',
-        mps: 7.5,  costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 3 },
+        mps: 11,  costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 3 },
                    costT: { 'Theorem a2i': 1, 'Axiom ax-mp': 1 }
     },
     'Theorem imim2i': {
         func: '⊢ (𝜑 → 𝜓) ⇒ ⊢ ((𝜒 → 𝜑) → (𝜒 → 𝜓))',
-        mps: 9,    costW: { 'phi': 1, 'psi': 1, 'chi': 1, 'imply': 1 },
+        mps: 13,    costW: { 'phi': 1, 'psi': 1, 'chi': 1, 'imply': 1 },
                    costT: { 'Theorem a1i': 1, 'Theorem a2i': 1 }
     },
     'Theorem syl': {
         func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) ⇒ ⊢ (𝜑 → 𝜒)',
-        mps: 12,   costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 2 },
+        mps: 16,   costW: { 'phi': 2, 'psi': 2, 'chi': 1, 'imply': 2 },
                    costT: { 'Theorem a1i': 1, 'Theorem mpd': 1 },
         purchase: 'Syntax theta'
     },
     'Theorem 3syl': {
         func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) & ⊢ (𝜒 → 𝜃) ⇒ ⊢ (𝜑 → 𝜃)',
-        mps: 12,   costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'theta': 1, 'imply': 2 },
+        mps: 20,   costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'theta': 1, 'imply': 2 },
                    costT: { 'Theorem syl': 2 },
         purchase: 'Syntax tau'
     },
     'Theorem 4syl': {
         func: '⊢ (𝜑 → 𝜓) & ⊢ (𝜓 → 𝜒) & ⊢ (𝜒 → 𝜃) & ⊢ (𝜃 → 𝜏) ⇒ ⊢ (𝜑 → 𝜏)',
-        mps: 12,   costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'theta': 2, 'tau': 1, 'imply': 2 },
+        mps: 25,   costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'theta': 2, 'tau': 1, 'imply': 2 },
                    costT: { 'Theorem 3syl': 1, 'Theorem syl': 1 },
     },
     'Theorem mpi': {
         func: '⊢ 𝜓 & ⊢ (𝜑 → (𝜓 → 𝜒)) ⇒ ⊢ (𝜑 → 𝜒)',
-        mps: 9,   costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'imply': 2 },
+        mps: 18,  costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'imply': 2 },
                   costT: { 'Theorem a1i': 1, 'Theorem mpd': 1 }
+    },
+    'Theorem mpisyl': {
+        func: '⊢ (𝜑 → 𝜓) & ⊢ 𝜒 & ⊢ (𝜓 → (𝜒 → 𝜃)) ⇒ ⊢ (𝜑 → 𝜃)',
+        mps: 30,   costW: { 'phi': 2, 'psi': 2, 'chi': 2, 'theta': 2, 'imply': 3 },
+                   costT: { 'Theorem a1i': 1, 'Theorem mpd': 1, 'Theorem syl': 1 },
+    },
+    'Theorem id': {
+        func: '⊢ (𝜑 → 𝜑)',
+        mps: 10,   costW: { 'phi': 2 },
+                   costT: { 'Axiom ax-1': 2, 'Theorem mpd': 1 }
     }
 
     // '': {

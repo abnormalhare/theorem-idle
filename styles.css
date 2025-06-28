@@ -181,7 +181,7 @@ button:hover {
 
 /* Press effect on click */
 .character-button:active {
-    transform: scale(0.95);  /* Shrink the button on click */
+    transform: scale(0.98);  /* Shrink the button on click */
 }
 
 /* Character symbol */
@@ -248,7 +248,7 @@ button:hover {
 /* Press effect on click */
 .theorem-button:active,
 .upgrade-button:active {
-    transform: scale(0.95);  /* Shrink the button on click */
+    transform: scale(0.98);  /* Shrink the button on click */
 }
 
 /* make it separate from the rest of the content */
@@ -263,9 +263,26 @@ button:hover {
     color: #f1fa8c;
 }
 
+.rebirth-btn {
+    position: absolute; /* Absolute positioning within the header */
+    left: 20px; /* Aligns to the far left of the header */
+    top: 50%; /* Vertically centers it relative to the header */
+    transform: translateY(-50%);
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #6272a4;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
 .rebirth-info {
-    padding-left: 10px;
-    margin: 10px 0;
+    position: absolute;
+    left: 150px; /* Aligns to the right of the rebirth button */
+    top: -10%; /* Vertically centers it relative to the header */
+    justify-content: left;
     font-weight: bold;
 }
 
