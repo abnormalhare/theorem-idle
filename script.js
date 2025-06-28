@@ -522,7 +522,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function performRebirth() {
-    rebirthCount++;
+    rebirthCount += rebirthGetCount;
     rebirthBonus = 1 + rebirthCount * 0.15;
     metaCount = baseMetaCount;
     metasPerSecond = 0.5 * rebirthBonus;
