@@ -24,52 +24,58 @@ body {
 .header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    position: relative; /* Allows positioning of the button */
+    justify-content: space-between;
+    position: relative;
     margin-bottom: 20px;
+    gap: 0;
+    width: 100%;
 }
 
-/* Title centered */
-.header h1 {
+/* Three header sections */
+.header-left,
+.header-center,
+.header-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 0;
+}
+
+/* Left: rebirth button + info */
+.header-left .rebirth-btn {
+    margin-right: 10px;
+}
+.header-left .rebirth-info {
+    margin-left: 0;
+}
+
+/* Center: title */
+.header-center {
+    flex: 1 1 0;
+    justify-content: center;
+}
+.header-center h1 {
+    position: static;
     margin: 0;
+    padding-right: 100px;
     font-size: 2rem;
     text-align: center;
-    flex-grow: 1; /* Allows the title to take up remaining space */
+    width: 100%;
+    pointer-events: auto;
+    z-index: auto;
 }
 
-/* Dark mode button in the header */
+/* Right: reset and dark mode buttons */
+.header-right {
+    gap: 10px;
+}
+.reset-btn,
 .dark-mode-btn {
-    position: absolute; /* Absolute positioning within the header */
-    right: 20px; /* Aligns to the far right of the header */
-    top: 50%; /* Vertically centers it relative to the header */
-    transform: translateY(-50%);
-    padding: 10px 20px;
-    font-size: 16px;
-    color: #ffffff;
-    background-color: #6272a4;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.dark-mode-btn:hover {
-    background-color: #44475a;
-}
-
-.reset-btn {
-    position: absolute; /* Absolute positioning within the header */
-    right: 200px; /* Aligns to the far right of the header */
-    top: 50%; /* Vertically centers it relative to the header */
-    transform: translateY(-50%);
-    padding: 11px 20px;
-    font-size: 16px;
-    color: #ffffff;
-    background-color: #6272a4;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    position: static;
+    right: unset;
+    top: unset;
+    transform: none;
+    margin: 0;
 }
 
 /* Dark mode styles */
@@ -264,26 +270,25 @@ button:hover {
 }
 
 .rebirth-btn {
-    position: absolute; /* Absolute positioning within the header */
-    left: 20px; /* Aligns to the far left of the header */
-    top: 50%; /* Vertically centers it relative to the header */
-    transform: translateY(-50%);
-    padding: 10px 20px;
-    font-size: 16px;
-    color: #ffffff;
-    background-color: #6272a4;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    /* Remove absolute positioning so it flows inline */
+    position: static;
+    left: unset;
+    top: unset;
+    transform: none;
+    margin-right: 0;
+    flex-shrink: 0;
 }
 
 .rebirth-info {
-    position: absolute;
-    left: 150px; /* Aligns to the right of the rebirth button */
-    top: -10%; /* Vertically centers it relative to the header */
-    justify-content: left;
+    /* Remove absolute positioning so it flows inline */
+    position: static;
+    left: unset;
+    top: unset;
+    transform: none;
     font-weight: bold;
+    white-space: nowrap;
+    margin-left: 10px; /* Space to the right of the button */
+    flex-shrink: 0;
 }
 
 h2 { /* Lol */

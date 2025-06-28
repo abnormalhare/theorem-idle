@@ -3,7 +3,9 @@ let metaCount = baseMetaCount;
 let metaCountDisp = metaCount;
 let metasPerSecond = 0.5;
 let rebirthCount = 0;
+let rebirthGetCount = 0;
 let rebirthBonus = 1;
+const rebirthInitialValue = 10000;
 
 const characters = {
     'phi':   { symbol: '𝜑', name: 'Phi', baseCost: 2 },
@@ -156,19 +158,22 @@ let purchasedTheorems = {};
 const SECOND = 1000;
 
 let prevTime = performance.now();
-function updateMeta(time) {
+function updatePage(time) {
     metaCount += metasPerSecond * ((time - prevTime) / SECOND);
+    if (metaCount < 2 * rebirthInitialValue) {
+        rebirthGetCount = +(metaCount >= rebirthInitialValue);
+    } else {
+        rebirthGetCount = 2 + Math.floor(Math.log2(metaCount / (2 * rebirthInitialValue)));
+    }
     prevTime = time;
     metaCountElem.textContent = `${metaCount.toFixed(2)} Metas`;
     mpsCountElem.textContent = `${metasPerSecond.toFixed(2)} m/s`;
+    rebirthButton.textContent = `🔁 Rebirth (${rebirthGetCount})`;
     localStorage.setItem('metaCount', metaCount);
-    requestAnimationFrame(updateMeta);
+    requestAnimationFrame(updatePage);
 }
 
-requestAnimationFrame(updateMeta);
-function updateRebirthInfo() {
-    rebirthInfo.textContent = `Rebirths: ${rebirthCount} | Bonus: +${((rebirthBonus-1)*100).toFixed(0)}% m/s`;
-}
+requestAnimationFrame(updatePage);
 
 function save() {
     localStorage.setItem('metaCount', metaCount);
@@ -348,6 +353,10 @@ function purchaseTheorem(id) {
     }
 }
 
+function updateRebirthInfo() {
+    rebirthInfo.textContent = `Rebirths: ${rebirthCount} | Bonus: +${((rebirthBonus-1)*100).toFixed(0)}% m/s`;
+}
+
 // Generate character buttons dynamically (only Phi and Psi visible initially)
 function generateCharacterButtons() {
     visibleCharacters.forEach(id => {
@@ -483,10 +492,10 @@ function updateDarkModeButton(isDarkMode) {
 }
 
 rebirthButton.addEventListener('click', () => {
-    if (metaCount >= Math.pow(10, rebirthCount + 4)) { // Example threshold for rebirth
+    if (metaCount >= rebirthInitialValue) { // Example threshold for rebirth
         performRebirth();
     } else {
-        alert(`You need at least ${Math.pow(10, rebirthCount + 4)} Metas to rebirth!`);
+        alert(`You need at least ${rebirthInitialValue} Metas to rebirth!`);
     }
 });
 
